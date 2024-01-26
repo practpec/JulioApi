@@ -2,19 +2,16 @@ const db = require('../configs/db.config');
 
 class Usuario {
 
-    constructor({ id, email, password, deleted, createdAt, updatedAt, deletedAt }) {
+    constructor({ id, name, email, password}) {
         this.id = id;
+        this.name = name;
         this.email = email;
         this.password = password;
-        this.deleted = deleted;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.deletedAt = deletedAt;
     }
 
     static async getAll({ offset, limit }, { sort, order }) {
         const connection = await db.createConnection();
-        let query = "SELECT id, email, password, deleted, created_at, updated_at, deleted_at FROM usuarios WHERE deleted = 0";
+        let query = "SELECT id, name, email, password FROM users";
 
         if (sort && order) {
             query += ` ORDER BY ${sort} ${order}`
@@ -32,30 +29,15 @@ class Usuario {
 
     static async getById(id) {
         const connection = await db.createConnection();
-        const [rows] = await connection.execute("SELECT id, email, password, deleted, created_at, updated_at, deleted_at FROM usuarios WHERE id = ? AND deleted = 0", [id]);
+        const [rows] = await connection.execute("SELECT id, name, email, password FROM users WHERE id = ? ", [id]);
         connection.end();
 
         if (rows.length > 0) {
             const row = rows[0];
-            return new Usuario({ id: row.id, email: row.email, password: row.password, deleted: row.deleted, createdAt: row.created_at, updatedAt: row.updated_at, deletedAt: row.deleted_at });
+            return new Usuario({ id: row.id, name:row.name, email: row.email, password: row.password});
         }
 
         return null;
-    }
-
-    static async deleteLogicoById(id) {
-        const connection = await db.createConnection();
-
-        const deletedAt = new Date();
-        const [result] = connection.execute("UPDATE usuarios SET deleted = 0, deleted_at = ? WHERE id = ?", [deletedAt, id]);
-
-        connection.end();
-
-        if (result.affectedRows === 0) {
-            throw new Error("No se pudo eliminar el usuario");
-        }
-
-        return
     }
 
     static async deleteFisicoById(id) {
@@ -65,19 +47,6 @@ class Usuario {
 
         if (result.affectedRows == 0) {
             throw new Error("no se eliminó el usuario");
-        }
-
-        return
-    }
-
-    static async updateById(id, { email, password }) {
-        const connection = await db.createConnection();
-
-        const updatedAt = new Date();
-        const [result] = await connection.execute("UPDATE usuarios SET email = ?, password = ?, updated_at = ? WHERE id = ?", [email, password, updatedAt, id]);
-
-        if (result.affectedRows == 0) {
-            throw new Error("no se actualizó el usuario");
         }
 
         return

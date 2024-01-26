@@ -138,6 +138,6 @@ module.exports = {
     index,
     getById,
     create,
-    delete: deleteLogico,
+    deleteFisico,
     update
 }
